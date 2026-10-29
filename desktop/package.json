@@ -1,0 +1,51 @@
+{
+  "name": "amphoreus-monitor",
+  "version": "1.0.0",
+  "description": "翁法罗斯 · 模拟监看 — 制作 · 天道之D菌",
+  "author": "天道之D菌",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win portable",
+    "dist:dir": "electron-builder --win --dir"
+  },
+  "devDependencies": {
+    "electron": "^39.0.0",
+    "electron-builder": "^26.0.0"
+  },
+  "build": {
+    "appId": "com.daodizhijun.amphoreus.monitor",
+    "productName": "翁法罗斯",
+    "copyright": "制作 · 天道之D菌　立绘素材版权归 miHoYo 所有，本条为同人作品",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "app/**/*",
+      "package.json"
+    ],
+    "asar": false,
+    "compression": "maximum",
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "翁法罗斯.exe",
+      "icon": "build/icon.ico",
+      "legalTrademarks": "同人作品 · 制作 天道之D菌"
+    },
+    "portable": {
+      "artifactName": "翁法罗斯.exe",
+      "unpackDirName": "AmphoreusMonitor"
+    }
+  }
+}
