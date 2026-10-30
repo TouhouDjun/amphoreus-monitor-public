@@ -1166,9 +1166,34 @@ body.chron .ch-mid{opacity:1}
 
 .ch-scan{position:absolute;inset:0;z-index:7;pointer-events:none;opacity:.5;
   background:repeating-linear-gradient(0deg,rgba(255,255,255,.022) 0 1px,transparent 1px 3px)}
-.ch-skip b{display:block;font-weight:400;font-size:clamp(15px,1.9vh,19px);color:#f2dda6;letter-spacing:.14em}
-.ch-skip span{display:block;margin-top:4px;font-size:clamp(11px,1.25vh,13px);letter-spacing:.06em;color:rgba(206,226,240,.72)}
-.ch-skip{position:absolute;left:50%;bottom:2.6vh;transform:translateX(-50%);z-index:6;
+.ch-quote{margin:0 0 14px;opacity:0;transform:translateY(6px);
+  transition:opacity .55s ease,transform .55s ease;pointer-events:none}
+.ch-quote.on{opacity:1;transform:none}
+.ch-quote .cq-k{display:block;font-size:clamp(11px,1.3vh,13px);letter-spacing:.24em;color:rgba(232,200,122,.92);margin-bottom:5px}
+.ch-quote p{margin:0;padding-left:12px;border-left:1px solid rgba(232,200,122,.42);
+  font-size:clamp(13px,1.78vh,18px);line-height:1.7;color:rgba(232,240,250,.94);
+  text-shadow:0 2px 12px rgba(0,0,0,.55)}
+.ch-skip{display:flex!important;flex-direction:column;align-items:center;gap:10px}
+.ch-skip b{display:block;font-weight:400;font-family:"STKaiti","KaiTi","Songti SC",serif;
+  font-size:clamp(32px,5.1vh,58px);line-height:1.14;letter-spacing:.16em;color:#f7e6bb;white-space:nowrap;
+  text-shadow:0 0 32px rgba(232,200,122,.42),0 3px 10px rgba(0,0,0,.62)}
+.ch-skip span{display:block;margin-top:2px;font-size:clamp(14px,1.95vh,20px);
+  letter-spacing:.2em;color:rgba(216,228,242,.84);text-shadow:0 2px 8px rgba(0,0,0,.7)}
+.ch-skip{position:absolute;left:50%;top:15.5%;bottom:auto;transform:translateX(-50%);
+  z-index:9;display:flex!important;flex-direction:column;align-items:center;gap:11px;
+  pointer-events:none;opacity:0;text-align:center;padding:16px 34px 18px;
+  background:radial-gradient(60% 130% at 50% 55%,rgba(4,8,14,.62),rgba(4,8,14,.28) 60%,transparent 85%)}
+.ch-intro{display:none!important;position:absolute;left:50%;bottom:8.5vh;transform:translateX(-50%) translateY(10px);
+  z-index:9;text-align:center;pointer-events:none;opacity:0;
+  transition:opacity .6s ease,transform .6s cubic-bezier(.2,.9,.25,1)}
+.ch-intro.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.ch-intro b{display:block;font-family:"STKaiti","KaiTi","Songti SC",serif;
+  font-size:clamp(34px,5.4vh,62px);line-height:1.15;letter-spacing:.16em;
+  color:#f6e3b4;text-shadow:0 0 28px rgba(232,200,122,.35),0 2px 0 rgba(0,0,0,.5)}
+.ch-intro span{display:block;margin-top:12px;font-size:clamp(14px,1.9vh,19px);
+  letter-spacing:.18em;color:rgba(214,226,240,.80)}
+.ch-intro i{display:block;width:min(420px,52%);height:1px;margin:16px auto 0;
+  background:linear-gradient(90deg,transparent,rgba(232,200,122,.75),transparent)}
   padding:8px 20px 9px;text-align:center;border-radius:2px;
   background:linear-gradient(180deg,rgba(4,9,16,.18),rgba(4,9,16,.62));
   border-bottom:1px solid rgba(233,200,119,.28);
@@ -1420,6 +1445,18 @@ body.gated{overflow:hidden}
 #sim .ag-h span{flex:0 0 108px;font-family:var(--mono);font-size:10.5px;color:rgba(127,224,255,.5);text-align:right}
 #sim .agent{cursor:pointer}
 #sim .agent:hover .code{color:#f0dcaa}
+/* ===== 开场大字提示（全局） ===== */
+#bigTip{position:fixed;left:0;right:0;bottom:16vh;z-index:120;display:flex;flex-direction:column;
+  align-items:center;gap:14px;pointer-events:none;
+  opacity:0;transform:translateY(14px);
+  transition:opacity .7s ease,transform .7s cubic-bezier(.2,.9,.25,1)}
+#bigTip b{font-family:"STKaiti","KaiTi","Songti SC",serif;font-weight:400;
+  font-size:clamp(36px,5.8vh,66px);letter-spacing:.18em;color:#f7e6bb;
+  text-shadow:0 0 34px rgba(232,200,122,.42),0 3px 10px rgba(0,0,0,.65)}
+#bigTip span{font-size:clamp(14px,1.95vh,20px);letter-spacing:.2em;color:rgba(214,226,240,.82);
+  text-shadow:0 2px 8px rgba(0,0,0,.7)}
+#bigTip i{width:min(460px,54vw);height:1px;
+  background:linear-gradient(90deg,transparent,rgba(232,200,122,.8),transparent)}
 </style>
 </head>
 <body>
@@ -1736,6 +1773,7 @@ body.gated{overflow:hidden}
     </div>
     <div class="ch-textbox" id="chtextbox">
       <div class="ch-trule" id="chtrule"></div>
+      <div class="ch-quote" id="chquote"><span class="cq-k" id="chqk">—</span><p id="chq"></p></div>
       <p class="ch-text" id="chtext"></p>
     </div>
     <div class="ch-stamp" id="chstamp"></div>
@@ -1776,7 +1814,21 @@ body.gated{overflow:hidden}
 
 <div class="preload" id="pre"></div>
 <pre id="debug" style="position:fixed;left:-99999px;top:0"></pre>
+<script src="assets/语音/pool.js"></script>
 <script>
+/* 官方角色语音播放器（编年史/演算小框共用） */
+window.playVoice=function(src){
+  try{
+    if(!src)return;
+    if(!window.__voiceReady)return;          /* 未点「进入」之前一律静音 */
+    var snd=document.getElementById('snd');
+    if(snd&&snd.classList.contains('mute'))return;
+    if(window.__voiceAudio){try{window.__voiceAudio.pause()}catch(e){}}
+    var a=new Audio(src); a.volume=0.92; window.__voiceAudio=a;
+    a.play().catch(function(){});
+    return a;
+  }catch(e){ return null; }
+};
 (function(){
 'use strict';
 var NS='http://www.w3.org/2000/svg';
@@ -2454,11 +2506,12 @@ function progAt(t){
   if(PROG.lock!==null)return PROG.lock;
   var L=(t-CH_T0)-CH_START;
   if(L<0)return 0;
-  var i=Math.floor(L/SC_CYCLE);
+  var i=0;
+  while(i<SCENES.length&&L>=chSpan(i)){L-=chSpan(i);i++}
   if(i>=SCENES.length)return 99;
-  var q=L-i*SC_CYCLE;
+  var q=L;
   var prev=i>0?PROG_AFTER[i-1]:0;
-  var tw=SC_ENTER+SC_HOLD+SC_EXIT+220;
+  var tw=chTotal(i)+220;
   if(q<tw)return prev;
   var f=clamp((q-tw)/CH_TWEEN,0,1);
   if(f>=1)return PROG_AFTER[i];
@@ -2767,7 +2820,11 @@ function init(){
    17) 编年史 · 十幕
    —— 全部视觉由 JS 逐帧写入内联样式，保证 ?t= 冻结可复现
    ============================================================ */
-var SC_ENTER=900,SC_HOLD=3600,SC_EXIT=700,SC_GAP=3000;
+var SC_ENTER=900,SC_HOLD=6000,SC_EXIT=700,SC_GAP=2200;
+var CH_EXTRA=[3910,5750,0,0,0,2430,0,0,9120,0];   /* 每幕额外停留（按语音实测时长离线预置） */
+function chHold(i){var e=CH_EXTRA[i];return SC_HOLD+((typeof e==='number'&&isFinite(e))?e:0);}
+function chTotal(i){return SC_ENTER+chHold(i)+SC_EXIT;}
+function chSpan(i){return chTotal(i)+SC_GAP;}
 var SC_CYCLE=SC_ENTER+SC_HOLD+SC_EXIT+SC_GAP;
 var CH_START=2600;
 var CH_T0=0,CH_ACC=0,CH_PAUSED=false,CH_PAUSE_AT=0,CH_DISABLED=false;
@@ -2879,6 +2936,37 @@ function buildChron(){
   if(rb)rb.addEventListener('click',function(e){e.stopPropagation();restartAll()});
 }
 
+var CHQ=[
+ {n:'白厄',q:'复仇的渴望一直支撑着我前行，即便心有不安，我也相信漫漫长夜的尽头，是光的方向。'},
+ {n:'昔涟',q:'记忆的涟漪，等待被流星的亲吻唤醒——要用「爱」铭记我，在那美丽的明天。'},
+ {n:'卡厄斯兰那',q:'我不会…忘记……'},
+ {n:'刻律德菈',q:'王者为先，万民随后。'},
+ {n:'遐蝶',q:'再寒冷的彼岸，也会有花香。'},
+ {n:'万敌',q:'她为翁法罗斯做的牺牲与努力，将让这片破碎的焦土，生长出繁荣的城邦。'},
+ {n:'阿格莱雅',q:'你无法扑灭一团火，它们相传不熄。'},
+ {n:'无名客',q:'这故事，如我们所书！'},
+ {n:'长夜月',q:'我是被遗忘的过去，是陪伴「她」的长夜……不惜任何代价。'},
+ {n:'白厄',q:'亿万火种之怒，燃尽此身！'}
+];
+var CH_PRELOADED=false;
+function chPreload(){
+  if(CH_PRELOADED)return;
+  CH_PRELOADED=true;
+  for(var k=0;k<SCENES.length;k++){(function(_k){
+    try{
+      var a=new Audio('assets/语音/chron_'+pad2(_k+1)+'.wav');
+      a.preload='metadata';
+      var set=function(){
+        try{
+          var d=a.duration;
+          if(isFinite(d)&&d>1){CH_EXTRA[_k]=Math.max(0,Math.min(5200,d*1000+520-(SC_ENTER+SC_HOLD+SC_EXIT)))}
+        }catch(e){}
+      };
+      set();
+      if(a.readyState<1)a.addEventListener('loadedmetadata',set,{once:true});
+    }catch(e){}
+  })(k)}
+}
 function chSetScene(i){
   var d=SCENES[i];if(!d)return;
   chIdx=i;
@@ -2890,6 +2978,29 @@ function chSetScene(i){
   else{CH.name2.textContent='';CH.name2.style.display='none'}
   CH.code.textContent=d.code;
   CH.text.textContent=d.text;
+  /* 语音：时长已在 CH_EXTRA 里离线预置，运行期不再改时间轴（改了会导致切幕错位）。
+     第 8 幕立绘是女开拓者（星），优先用女版 chron_08_f.wav；缺文件回退 chron_08.wav（保证有声音）。 */
+  try{
+    if(i===7){
+      var _f='assets/语音/chron_08_f.wav';
+      var _probe=new Audio();
+      _probe.addEventListener('loadedmetadata',function(){ if(window.playVoice)window.playVoice(_f); });
+      _probe.addEventListener('error',function(){
+        /* 没有女版文件就用现有版本，至少保证这一幕有声音 */
+        if(window.playVoice)window.playVoice('assets/语音/chron_08.wav');
+      });
+      _probe.preload='metadata';
+      _probe.src=_f;
+    }else if(window.playVoice){
+      window.playVoice('assets/语音/chron_'+pad2(i+1)+'.wav');
+    }
+  }catch(e){}
+  var _cq=el('#chquote'),_cqk=el('#chqk'),_cqp=_cq&&_cq.querySelector('p');
+  if(_cq&&CHQ[i]){
+    _cqk.textContent='VOICE · '+CHQ[i].n;
+    _cqp.textContent='「'+CHQ[i].q+'」';
+    _cq.classList.remove('on'); void _cq.offsetWidth; _cq.classList.add('on');
+  }else if(_cq){ _cq.classList.remove('on'); }
   /* 左栏中段字段：从 SERIES 里按角色名找对应因子 */
   var _s=null;
   for(var _k=0;_k<SERIES.length;_k++){if(SERIES[_k].char===d.art){_s=SERIES[_k];break}}
@@ -2922,14 +3033,16 @@ function chronAt(t){
   var L=chClock(t)-CH_T0;
   var p=L-CH_START;
   if(p<0){if(chVis)chHide();chIdleStat();return}
-  var i=Math.floor(p/SC_CYCLE);
+  var i=0;
+  while(i<SCENES.length&&p>=chSpan(i)){p-=chSpan(i);i++}
   if(i>=SCENES.length){if(chVis)chHide();return}
-  var q=p-i*SC_CYCLE;
-  var total=SC_ENTER+SC_HOLD+SC_EXIT;
+  var q=p;
+  var total=chTotal(i);
   if(q>=total){if(chVis)chHide();chWaitStat(i,q);return}
   if(i!==chIdx)chSetScene(i);
   if(!chVis){
     chVis=true;
+    typeIntro();
     document.body.classList.add('chron');
     CH.root.classList.add('on');
     CH.root.setAttribute('aria-hidden','false');
@@ -2944,15 +3057,15 @@ function chIdleStat(){
 }
 function chWaitStat(i,q){
   if(CH.stat)CH.stat.textContent='第 '+pad2(i+1)+' 幕 · 已归档';
-  if(CH.rd)CH.rd.style.width=(clamp((q-SC_ENTER-SC_HOLD-SC_EXIT)/SC_GAP,0,1)*100).toFixed(1)+'%';
+  if(CH.rd)CH.rd.style.width=(clamp((q-chTotal(i))/SC_GAP,0,1)*100).toFixed(1)+'%';
   chPhase='wait';
 }
 
 function chDraw(i,q){
   var enter=q<SC_ENTER;
-  var hold=q>=SC_ENTER&&q<SC_ENTER+SC_HOLD;
+  var hold=q>=SC_ENTER&&q<SC_ENTER+chHold(i);
   var pe=enter?easeExpo(q/SC_ENTER):1;
-  var out=clamp((q-(SC_ENTER+SC_HOLD))/SC_EXIT,0,1);
+  var out=clamp((q-(SC_ENTER+chHold(i)))/SC_EXIT,0,1);
   var paper=clamp(q/200,0,1);
   var op=paper*(1-out*out);
   var jit=0;
@@ -2968,7 +3081,7 @@ function chDraw(i,q){
   CH.grain.style.opacity=(gb*(0.72+0.28*Math.abs(Math.sin(q*0.075)))).toFixed(3);
   CH.grain.style.transform='translate3d('+(jit*2.6).toFixed(2)+'px,0,0)';
   CH.mask.style.clipPath=RM?'none':'inset(0 0 0 '+((1-pe)*100).toFixed(2)+'%)';
-  var kb=clamp((q-SC_ENTER)/SC_HOLD,0,1);
+  var kb=clamp((q-SC_ENTER)/chHold(i),0,1);
   CH.art.style.transform='translate3d(0,'+((1-pe)*20-kb*7).toFixed(1)+'px,0) scale('+(1+0.06*kb).toFixed(4)+')';
   CH.art.style.filter=RM?'none':'blur('+((1-pe)*4).toFixed(2)+'px)';
   if(CH.aw2&&CH.aw2.style.display!=='none')
@@ -2982,7 +3095,7 @@ function chDraw(i,q){
   CH.trule.style.transform='scaleX('+easeExpo(clamp((q-380)/700,0,1)).toFixed(4)+')';
   CH.meta.style.opacity=(clamp((q-620)/520,0,1)*(1-out)).toFixed(3);
   CH.stamp.style.opacity=(clamp((q-760)/420,0,1)*(0.92-0.55*out)).toFixed(3);
-  CH.skip.style.opacity=(hold?clamp((q-SC_ENTER-1100)/700,0,1)*0.85:0).toFixed(3);
+  CH.skip.style.opacity=(i===0&&hold?clamp((q-SC_ENTER-420)/620,0,1):0).toFixed(3);
   var ph=enter?'enter':(hold?'hold':'exit');
   if(ph!==chPhase){
     chPhase=ph;
@@ -3010,23 +3123,44 @@ function chHide(){
   if(CH.grain)CH.grain.style.opacity=0;
 }
 
+var CH_INTRO_DONE=false,chIntroTimer=null;
+function typeIntro(){
+  var box=el('#chIntro');
+  if(!box||CH_INTRO_DONE)return;
+  CH_INTRO_DONE=true;
+  clearTimeout(chIntroTimer);
+  box.classList.remove('on');
+  void box.offsetWidth;                 /* 强制重排，保证重新淡入 */
+  box.classList.add('on');
+  chIntroTimer=setTimeout(function(){box.classList.remove('on')},4200);
+}
 function jumpTo(i,full){
   i=clamp(i,0,SCENES.length-1);
   CH_ACC=0;CH_PAUSED=false;chIdx=-1;chPhase='';
   var off=full?(SC_ENTER+320):0;
-  CH_T0=now()-(CH_START+i*SC_CYCLE)-off;
+  var _cum=0;
+  for(var _z=0;_z<i;_z++)_cum+=chSpan(_z);
+  CH_T0=now()-(CH_START+_cum)-off;
   if(full){
     var need=PRELOG.length+i+1;
     if(LOGN<need){LOGN=need;logAt()}
   }
 }
+function _chGuard(){
+  /* 进门那一下的 Enter/Space 不要被当成“跳过本幕” */
+  var t0=(window.__enterAt||0);
+  if(t0&&(now()-t0)<1200)return true;
+  return false;
+}
 function chSkip(){
   if(CH_DISABLED)return;
   if(chIdx<0)return;
+  if(_chGuard())return;
   jumpTo(chIdx+1,false);
 }
 function chNext(d){
   if(CH_DISABLED)return;
+  if(d>0&&_chGuard())return;
   if(chIdx<0){jumpTo(0,false);return}
   var n=chIdx+d;
   if(n<0)n=0;
@@ -3042,6 +3176,9 @@ function chTogglePause(){
 function restartAll(){
   CH_ACC=0;CH_PAUSED=false;CH_PAUSE_AT=0;CH_T0=now();
   chIdx=-1;chPhase='';chHide();
+  CH_INTRO_DONE=false;clearTimeout(chIntroTimer)
+  {var _i=el('#chIntro');if(_i)_i.classList.remove('on')}
+  setTimeout(typeIntro,320);
   PROG.lock=null;tlS.pct=-1;tlS.node=-1;tlS.err=null;tlS.fired=false;tlS.w='';
   if(document.body.classList.contains('err'))setError(false);
   var rc=el('#runchip');
@@ -3138,19 +3275,45 @@ function dumpDebug(){
 
 /* ---- 开场门：默认显示；?gate=1 强制显示（截图用）；?t/?scene/?shot/?progress/?mute 直达主界面 ---- */
 try{renderEndings()}catch(e){}
+
+/* 开场大字提示：进门 / 重开时淡入，4.3s 后淡出 */
+var BIGTIP_TIMER=null;
+function showBigTip(ms){
+  var t=document.getElementById('bigTip');
+  if(!t)return;
+  clearTimeout(BIGTIP_TIMER);
+  t.style.transition='none';
+  t.style.opacity='0';
+  t.style.transform='translateY(14px)';
+  void t.offsetWidth;
+  t.style.transition='opacity .7s ease,transform .7s cubic-bezier(.2,.9,.25,1)';
+  t.style.opacity='1';
+  t.style.transform='translateY(0)';
+  BIGTIP_TIMER=setTimeout(function(){
+    t.style.opacity='0';
+    t.style.transform='translateY(10px)';
+  },ms||4600);
+}
+/* 页面启动就先亮一次，保证“最开始”就能看到 */
+
+window.showBigTip=showBigTip;
 function bootGate(){
   var gate=el('#gate');
   var force=Q.has('gate');
-  var direct=Q.has('t')||Q.has('scene')||Q.has('shot')||Q.has('progress')||Q.has('mute')||Q.has('sim')||Q.has('reboot')||Q.has('agent');
+  var direct=Q.has('t')||Q.has('scene')||Q.has('shot')||Q.has('progress')||Q.has('mute')||Q.has('sim')||Q.has('reboot')||Q.has('agent')||Q.has('dlg');
   init();                                   /* 先按老行为初始化好，进门时重启时间轴 */
-  if(!gate||(direct&&!force)){ if(gate&&gate.parentNode)gate.parentNode.removeChild(gate); return; }
+  try{ chPreload(); }catch(e){}
+  if(!gate||(direct&&!force)){ if(gate&&gate.parentNode)gate.parentNode.removeChild(gate); window.__voiceReady=true; return; }
   document.body.classList.add('gated');
   var entered=false;
   function enter(){
     if(entered)return; entered=true;
+    try{ window.__enterAt=now(); }catch(e){}
     document.body.classList.remove('gated');
+    window.__voiceReady=true;                 /* 点「进入」之后才允许出声 */
     gate.classList.add('go');
     try{ restartAll(); }catch(e){ console.error(e); }        /* 从 0 开始记录 */
+
     try{ var s=el('#snd'); if(s&&s.classList.contains('mute')) s.click(); }catch(e){}  /* 借手势解锁声音 */
     setTimeout(function(){ if(gate&&gate.parentNode)gate.parentNode.removeChild(gate); },1450);
   }
@@ -3219,9 +3382,11 @@ else bootGate();
 #sim .sl.red{color:#ff6b7d}
 #sim .sl.green{color:#87e3a8}
 #sim .sl.purple{color:#c9a6ff}
-#sim .sim-side{display:flex;flex-direction:column;gap:9px;min-height:0;overflow:hidden}
+#sim .sim-side{display:flex;flex-direction:column;gap:9px;min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:5px;scrollbar-width:thin}
+#sim .sim-side::-webkit-scrollbar{width:6px}
+#sim .sim-side::-webkit-scrollbar-thumb{background:rgba(120,170,200,.32);border-radius:3px}
 #sim .sim-port{flex:1 1 38%;min-height:130px}
-#sim .sim-port{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;
+#sim .sim-port{position:relative;flex:0 0 auto;height:clamp(116px,16.5vh,184px);min-height:0;overflow:hidden;
   border:1px solid rgba(127,224,255,.14);background:#060d16}
 #sim .sim-port img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
   object-position:50% 32%;opacity:0;transform:scale(1.04);
@@ -3254,6 +3419,12 @@ else bootGate();
 #sim .sim-choice{position:absolute;inset:0;z-index:5;display:none;align-items:center;justify-content:center;
   background:rgba(2,5,9,.72);backdrop-filter:blur(3px)}
 #sim .sim-choice.on{display:flex}
+#sim .ch-face{display:flex;gap:14px;align-items:center;margin:6px 0 14px;
+  padding:12px 14px;border:1px solid rgba(232,200,122,.22);background:rgba(8,16,26,.55)}
+#sim .ch-face img{width:92px;height:92px;object-fit:cover;object-position:50% 28%;flex:0 0 auto;
+  border:1px solid rgba(232,200,122,.35)}
+#sim .ch-face .ch-line b{display:block;font-size:13px;letter-spacing:.16em;color:#f2dda6;margin-bottom:6px}
+#sim .ch-face .ch-line p{margin:0;font-size:clamp(14px,1.8vh,18px);line-height:1.62;color:rgba(228,238,248,.94)}
 #sim .choice-card{width:min(780px,88vw);max-height:86vh;overflow:auto;border:1px solid rgba(233,200,119,.34);
   background:linear-gradient(180deg,rgba(10,19,30,.97),rgba(5,10,17,.98));
   box-shadow:0 40px 90px -30px #000,inset 0 0 0 1px rgba(255,240,205,.05);
@@ -3300,6 +3471,56 @@ else bootGate();
 #reboot h3{margin:10px 0 8px;font-family:"KaiTi","STKaiti",serif;font-weight:400;font-size:24px;letter-spacing:.1em;color:#f6efdd}
 #reboot p{margin:0 0 18px;font-size:13px;line-height:1.85;color:rgba(214,232,245,.8)}
 #reboot .rb-btns{display:flex;gap:12px;justify-content:flex-end}
+
+/* ===== 黄金裔名单 / 档案语录小框 / 终局特效 ===== */
+#sRoster{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+#sRoster .gl{position:relative;aspect-ratio:1/1.22;border:1px solid rgba(160,190,215,.16);
+  background:rgba(9,16,24,.6);overflow:hidden;transition:border-color .4s,filter .5s,opacity .5s}
+#sRoster .gl img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  object-position:50% 22%;filter:saturate(.9) brightness(.95);transition:filter .6s,transform .8s}
+#sRoster .gl .nm{position:absolute;left:0;right:0;bottom:0;padding:3px 2px 4px;
+  font-size:9px;letter-spacing:.06em;text-align:center;color:#dbe6f2;
+  background:linear-gradient(180deg,transparent,rgba(4,8,14,.88))}
+#sRoster .gl .pp{position:absolute;left:3px;top:2px;font-family:var(--mono);font-size:7.5px;
+  letter-spacing:.1em;color:rgba(232,200,122,.85)}
+#sRoster .gl.dead img{filter:grayscale(1) brightness(.45) contrast(1.1);transform:scale(.97)}
+#sRoster .gl.dead{border-color:rgba(255,70,70,.45);opacity:.85}
+#sRoster .gl .x{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:19px;color:#ff5566;text-shadow:0 0 14px rgba(255,60,80,.9)}
+#sRoster .gl.dead .x{display:flex;animation:glX .5s cubic-bezier(.2,.9,.25,1) both}
+@keyframes glX{0%{transform:scale(2.2) rotate(-18deg);opacity:0}60%{transform:scale(.92) rotate(6deg);opacity:1}100%{transform:scale(1) rotate(0);opacity:1}}
+
+#sDlg{position:absolute;left:26px;bottom:30px;z-index:12;width:min(400px,38%);
+  display:flex;gap:12px;padding:12px;border:1px solid rgba(232,200,122,.32);
+  background:linear-gradient(180deg,rgba(10,16,24,.94),rgba(6,10,16,.88));
+  box-shadow:0 10px 40px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.03);
+  opacity:0;transform:translateY(14px);pointer-events:none;
+  transition:opacity .45s ease,transform .45s cubic-bezier(.2,.9,.25,1)}
+#sDlg.on{opacity:1;transform:translateY(0)}
+#sDlg .ava{flex:0 0 62px;height:78px;overflow:hidden;border:1px solid rgba(160,190,215,.2)}
+#sDlg .ava img{width:100%;height:100%;object-fit:cover;object-position:50% 20%}
+#sDlg .tx{flex:1;min-width:0}
+#sDlg .nm{font-family:"KaiTi","STKaiti",serif;font-size:17px;color:#f3e6c4;letter-spacing:.08em}
+#sDlg .pp{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;color:rgba(232,200,122,.75);margin-top:2px}
+#sDlg .ln{margin-top:7px;font-size:12px;line-height:1.7;color:rgba(220,232,244,.9)}
+#sDlg .src{margin-top:7px;font-family:var(--mono);font-size:8px;letter-spacing:.18em;color:rgba(160,185,210,.6)}
+
+/* 终局：不同结局不同色光 */
+#sim .sim-endfx{position:absolute;inset:0;pointer-events:none;z-index:3;opacity:0;transition:opacity 1.2s ease}
+#sim[data-end] .sim-endfx{opacity:1}
+#sim .sim-endfx::before{content:'';position:absolute;inset:-10%;
+  background:radial-gradient(46% 46% at 50% 44%,var(--fx1),transparent 72%);
+  animation:fxBreath 5.5s ease-in-out infinite}
+#sim .sim-endfx::after{content:'';position:absolute;inset:0;
+  background:radial-gradient(80% 60% at 50% 50%,transparent 30%,var(--fx2) 130%)}
+@keyframes fxBreath{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:.95;transform:scale(1.04)}}
+#sim[data-end="destroy"]{--fx1:rgba(255,86,60,.30);--fx2:rgba(90,10,10,.42)}
+#sim[data-end="memory"]{--fx1:rgba(96,196,255,.28);--fx2:rgba(10,40,80,.42)}
+#sim[data-end="balance"]{--fx1:rgba(236,206,132,.26);--fx2:rgba(60,48,10,.40)}
+#sim[data-end="reason"]{--fx1:rgba(104,232,190,.26);--fx2:rgba(8,46,40,.42)}
+#sim[data-end="anom"]{--fx1:rgba(190,130,255,.28);--fx2:rgba(40,10,60,.44)}
+@media (max-width:1360px){#sRoster{grid-template-columns:repeat(6,1fr)}#sDlg{width:min(360px,46%);left:18px;bottom:18px}}
+
 </style>
 
 <div id="reboot" role="dialog" aria-label="强制重启确认">
@@ -3315,8 +3536,10 @@ else bootGate();
 </div>
 
 <div id="sim" role="dialog" aria-label="δ-me13 演算沙盘">
+  <div class="sim-endfx" id="sEndFx"></div>
   <div class="sim-grain"></div>
   <div class="sim-in">
+    <div id="sDlg"><div class="ava"><img id="sDlgImg" alt=""></div><div class="tx"><div class="nm" id="sDlgName">—</div><div class="pp" id="sDlgPath">—</div><div class="ln" id="sDlgLine"></div><div class="src">SOURCE · 官方角色语音 / 米游社 星穹铁道 WIKI</div></div></div>
     <div class="sim-hd">
       <div>
         <h2>δ-me13 · 强制重启</h2>
@@ -3355,6 +3578,10 @@ else bootGate();
             <div class="p" id="sPortPath">—</div>
             <div class="s" id="sPortLine"></div>
           </div>
+        </div>
+        <div class="side-card" id="sGoldCard">
+          <h4>十二黄金裔 · 存亡</h4>
+          <div id="sRoster"></div>
         </div>
         <div class="side-card">
           <h4>命途权重</h4>
@@ -3399,6 +3626,86 @@ else bootGate();
   var CHARS={'负世':'白厄','岁月':'昔涟','诡计':'赛飞儿','死亡':'遐蝶','理性':'那刻夏','律法':'刻律德菈',
              '大地':'荒笛（丹恒·腾荒）','黄金':'阿格莱雅','门径':'缇宝（缇安·缇宁同图）','纷争':'万敌',
              '海洋':'海瑟音','天空':'风堇'};
+
+  /* ===== 十二黄金裔：名单 / 存亡 / 档案语录 / 终局特效 ===== */
+  var GOLD=[
+    {p:'负世',f:'白厄',ln:'正想去找你呢，走，一起练练手？',a:'assets/语音/sim_负世.wav'},
+    {p:'岁月',f:'昔涟',ln:'以爱为始的故事，也一定以爱为终♪',a:'assets/语音/sim_岁月.wav'},
+    {p:'诡计',f:'赛飞儿',ln:'时间就是金钱呐，咱们刚刚共度的时光——就算我请你的啦~回见~',a:'assets/语音/sim_诡计.wav'},
+    {p:'死亡',f:'遐蝶',ln:'等到下一次鲜花绽放，如果还能在新世界再见，请别忘了我们的约定。',a:'assets/语音/sim_死亡.wav'},
+    {p:'理性',f:'那刻夏',ln:'学生的问题越大胆，我越喜欢，要是能与我辩驳上五个来回…高分！',a:'assets/语音/sim_理性.wav'},
+    {p:'律法',f:'刻律德菈',ln:'免礼。天光甚好，对弈一局如何？',a:'assets/语音/sim_律法.wav'},
+    {p:'大地',f:'荒笛（丹恒·腾荒）',ln:'想用翁法罗斯的礼节打招呼？可以。虽然我认为像往常那样就好。',a:'assets/语音/sim_大地.wav'},
+    {p:'黄金',f:'阿格莱雅',ln:'你无法扑灭一团火，它们相传不熄。',a:'assets/语音/sim_黄金.wav'},
+    {p:'门径',f:'缇宝（缇安·缇宁同图）',ln:'推开门吧，远方会是新的世界！',a:'assets/语音/sim_门径.wav'},
+    {p:'纷争',f:'万敌',ln:'悬锋城和奥赫玛积怨已久，长枪能刺穿敌王，却难以荡平民众心中的执念。',a:'assets/语音/sim_纷争.wav'},
+    {p:'海洋',f:'海瑟音',ln:'生命本如泡沫，何不趁早在宴会上尽情举杯呢？',a:'assets/语音/sim_海洋.wav'},
+    {p:'天空',f:'风堇',ln:'愿我们抵达的终点，再无阴霾。',a:'assets/语音/sim_天空.wav'}
+  ];
+  var goldAlive={},dlgQ=[],dlgBusy=false;
+  function goldInit(){ goldAlive={}; GOLD.forEach(function(g){goldAlive[g.p]=true}); renderRoster(); }
+  function renderRoster(){
+    var box=el('#sRoster'); if(!box)return;
+    box.innerHTML=GOLD.map(function(g){
+      var alive=goldAlive[g.p]!==false;
+      return '<div class="gl'+(alive?'':' dead')+'" data-p="'+g.p+'" title="'+g.f+'"><img src="assets/立绘/'+g.f+'.jpg" alt="" loading="lazy">'
+           +'<span class="pp">'+g.p+'</span><span class="nm">'+g.f.split('（')[0]+'</span><span class="x">×</span></div>';
+    }).join('');
+  }
+  function showDlg(g,keep){
+    var box=el('#sDlg'); if(!box||!g)return;
+    if(S&&S.pending){ dlgQ.push(g); return; }        /* 抉择卡开着时先排队，别抢台词 */
+    if(dlgBusy&&!keep){ dlgQ.push(g); return; }
+    dlgBusy=true;
+    el('#sDlgImg').src='assets/立绘/'+g.f+'.jpg';
+    el('#sDlgName').textContent=g.f;
+    el('#sDlgPath').textContent=g.p+' · '+(PATHP[PATH.indexOf(g.p)]||'');
+    var _pool=(window.VOICE_POOL&&window.VOICE_POOL[g.p])||null;
+    var _pick=null;
+    if(_pool&&_pool.length){
+      var _rk='__vr_'+g.p, _hist=window[_rk]||(window[_rk]=[]);
+      var _cand=[];
+      for(var _i=0;_i<_pool.length;_i++){ if(_hist.indexOf(_i)<0)_cand.push(_i) }
+      if(!_cand.length){ _cand=[]; for(var _j=0;_j<_pool.length;_j++)_cand.push(_j); _hist.length=0 }
+      var _idx=_cand[Math.floor(Math.random()*_cand.length)];
+      _pick=_pool[_idx];
+      _hist.push(_idx);
+      if(_hist.length>3)_hist.shift();          /* 最近 3 句不重复 */
+    }
+    el('#sDlgLine').textContent=_pick?_pick.t:g.ln;
+    var _aud=window.playVoice?window.playVoice(_pick?_pick.a:g.a):null;
+    box.classList.remove('on'); void box.offsetWidth; box.classList.add('on');
+    clearTimeout(box.__t);
+    var _hold=5200;
+    function _calc(){ try{ var d=_aud&&_aud.duration; if(isFinite(d)&&d>0.4)_hold=Math.max(4800,Math.min(11000,d*1000+900)); }catch(e){} }
+    if(_aud){ _calc(); if(_aud.readyState<1)_aud.addEventListener('loadedmetadata',_calc,{once:true}); }
+    box.__t=setTimeout(function(){
+      box.classList.remove('on'); dlgBusy=false;
+      var _a=window.__voiceAudio, _done=false;
+      function _next(){ if(_done)return; _done=true; if(dlgQ.length)showDlg(dlgQ.shift()); }
+      if(_a&&!_a.paused){ _a.addEventListener('ended',_next,{once:true}); setTimeout(_next,2600); }
+      else _next();
+    },_hold);
+  }
+  function killGold(p,why){
+    if(goldAlive[p]===false)return;
+    goldAlive[p]=false; renderRoster();
+    var g=GOLD.filter(function(x){return x.p===p})[0];
+    log('黄金裔「'+(g?g.f:p)+'」断裂：'+why,null);
+    if(g)showDlg(g);
+  }
+  function goldSync(){
+    if(!S)return;
+    var alive=GOLD.filter(function(g){return goldAlive[g.p]!==false});
+    var should=Math.max(0,Math.min(GOLD.length,S.gold));
+    var guard=0;
+    while(alive.length>should&&guard++<24){
+      var g=alive[Math.floor(Math.random()*alive.length)];
+      killGold(g.p,'在第 '+fmt(S.gen)+' 次循环的清算中退出演算');
+      alive=GOLD.filter(function(x){return goldAlive[x.p]!==false});
+    }
+  }
+
   var OBS={lykos:{n:'来古士',f:'来古士',p:'神礼观众 · 管理员 ID LykoS',
               l:['来古士在权杖外沿按下一枚观测钉子。','管理员批注写入第 N 次演算的脚注：这不算插手。','来古士把「毁灭」的种子又往火里推了一寸。']},
            traveler:{n:'无名客',f:'开拓者·记忆',p:'世界之外的变数 · 记忆',
@@ -3457,6 +3764,7 @@ else bootGate();
        obsMode:'lykos',port:'',jump:0,agents:[],archived:0,broken:0,inherited:0};
     PATH.forEach(function(p){S.w[p]=rnd(4,10)});
     S.w['负世']+=7;
+    goldInit();
     render();
     setPortrait('负世',true);
   }
@@ -3478,6 +3786,7 @@ else bootGate();
       return '<div class="path'+(i===0?' lead':'')+'"><i>'+x[0]+'</i><div class="bar"><u style="width:'+pc+'%"></u></div></div>';
     }).join('');
     if(arr[0][0]!==S.lead){ S.lead=arr[0][0]; setPortrait(S.lead); }
+    try{ goldSync(); }catch(e){}
     var ag=el('#sAgents');
     if(ag){
       var live=S.agents.filter(function(a){return !a.dead}).slice(0,4);
@@ -3504,7 +3813,7 @@ else bootGate();
       S.w[p]+=rnd(-1.4,1.4);
       if(p==='负世')S.w[p]+=S.destroy*0.5;
       if(p==='岁月')S.w[p]+=S.memory*0.5;
-      if(p==='均衡')S.w[p]+=S.balance*0.45;
+      if(p==='死亡')S.w[p]+=S.balance*0.45;   /* 死亡泰坦＝均衡命途 */
       if(p==='诡计')S.w[p]+=S.anomVar*0.45;
       if(p==='理性')S.w[p]+=S.intervene*0.4;
       if(S.w[p]<0.4)S.w[p]=0.4;
@@ -3598,9 +3907,26 @@ else bootGate();
     setTimeout(function(){ if(S&&S.pending) showChoice(d); },1100);
   }
 
+  /* 抉择点随机台词：从该命途角色的官方语音池里抽，最近 3 句不重复 */
+  function simPickLine(p){
+    var pool=window.VOICE_POOL&&window.VOICE_POOL[p];
+    var g=GOLD.filter(function(x){return x.p===p})[0];
+    if(!pool||!pool.length) return g?{t:g.ln,a:g.a}:null;
+    var hkey='__vrh_'+p, hist=window[hkey]||(window[hkey]=[]);
+    var pool2=[],i;
+    for(i=0;i<pool.length;i++) if(hist.indexOf(i)<0) pool2.push(i);
+    if(!pool2.length){hist.length=0;for(i=0;i<pool.length;i++)pool2.push(i)}
+    var k=pool2[Math.floor(Math.random()*pool2.length)];
+    hist.push(k); if(hist.length>3)hist.shift();
+    return pool[k];
+  }
+
   function showChoice(d){
     var card=el('#sChoiceCard');
+    var _face=simPickLine(d.p);            /* 该命途角色的随机台词（最近 3 句不重复） */
     card.innerHTML='<div class="k">DECISION POINT // 第 '+fmt(S.gen)+' 次循环 · 命途「'+d.p+'」</div>'
+      +'<div class="ch-face"><img src="assets/立绘/'+(CHARS[d.p]||'白厄')+'.jpg" alt="">'
+      +'<div class="ch-line"><b>'+CHARS[d.p]+'</b><p>'+(_face?_face.t:'')+'</p></div></div>'
       +'<h3>'+d.t+'</h3>'
       +'<p>当前主导方向「'+S.dir+'」，观测样本 '+S.obs.toFixed(2)+'，实体 '+fmt(S.ent)+'。观测者：'+OBS[S.obsMode].n+'。这一手怎么下？</p>'
       +'<div class="opts">'+d.o.map(function(o,i){
@@ -3611,12 +3937,16 @@ else bootGate();
       n.addEventListener('click',function(){ choose(d, d.o[+n.dataset.i]); });
     });
     setPortrait(d.p,true);
-    if(autoMode) setTimeout(function(){ choose(d, d.o[Math.floor(Math.random()*d.o.length)]) },800);
+    var _au=null;
+    if(_face&&_face.a&&window.playVoice){ try{_au=window.playVoice(_face.a)}catch(e){} }
+    var _wait=(_au&&isFinite(_au.duration)&&_au.duration>0)?(_au.duration*1000+500):2600;
+    if(autoMode) setTimeout(function(){ choose(d, d.o[Math.floor(Math.random()*d.o.length)]) },_wait);
   }
 
   function choose(d,o){
     if(!S||!S.pending)return;
     el('#sChoice').classList.remove('on');
+    setTimeout(function(){ if(dlgQ.length&&!dlgBusy) showDlg(dlgQ.shift()); },700);
     log('决策（'+d.p+'）：「'+o[0]+'」——'+o[1],'gold');
     var t=o[2];
     if(t==='destroy'){S.destroy+=0.9;S.balance-=0.15}
@@ -3636,7 +3966,7 @@ else bootGate();
   function finish(){
     S.done=true;
     var sc={destroy:S.destroy+S.w['负世']/26, memory:S.memory+S.w['岁月']/26,
-            balance:S.balance+S.w['均衡']/26, reason:S.intervene+S.w['理性']/26,
+            balance:S.balance+S.w['死亡']/26, reason:S.intervene+S.w['理性']/26,
             anom:S.anomVar+S.w['诡计']/26};
     var key='destroy',best=-1;
     Object.keys(sc).forEach(function(k){if(sc[k]>best){best=sc[k];key=k}});
@@ -3648,6 +3978,13 @@ else bootGate();
       anom:{t:'无名者登台',p:'变数',q:'天外来客留下了脚印。命运的图谱从此不再闭合——这很好，也很坏。'}
     };
     var e=END[key];
+    try{
+      var simEl=document.getElementById('sim');
+      if(simEl){ simEl.removeAttribute('data-end'); void simEl.offsetWidth; simEl.setAttribute('data-end',key); }
+      var endingPath={destroy:'负世',memory:'岁月',balance:'死亡',reason:'理性',anom:'诡计'}[key];
+      var gg=GOLD.filter(function(x){return x.p===endingPath})[0];
+      if(gg)setTimeout(function(){showDlg(gg,true)},900);
+    }catch(err){}
     var card=el('#sEndCard');
     card.innerHTML='<div class="k">SIMULATION TERMINATED // 第 '+fmt(S.gen)+' 次循环</div>'
       +'<h3>'+e.t+'</h3><div class="tag2">'+e.p+' · 终局 · 观测者 '+OBS[S.obsMode].n+'</div>'
@@ -3699,12 +4036,17 @@ else bootGate();
   Array.prototype.forEach.call(document.querySelectorAll('#sim .sim-ctrl button[data-sp]'),function(b){
     b.addEventListener('click',function(){ setSpeed(+b.dataset.sp) });
   });
+  /* 调试/演示：?speed=4 直接以指定倍速开局（在 startSim 之后才生效） */
   el('#sBack2').addEventListener('click',function(){ closeSim() });
 
   function startSim(){
     el('#sEnd').classList.remove('on');
     el('#sChoice').classList.remove('on');
     logEl=el('#sLog'); logEl.innerHTML='';
+    (function(){
+      var v=parseFloat(new URLSearchParams(location.search).get('speed')||'0');
+      if(v && [0.5,1,2,4].indexOf(v)>=0) setSpeed(v);
+    })();
     initState();
     document.body.classList.add('sim-on','sim-hidden');
     var sim=el('#sim');
@@ -3824,6 +4166,15 @@ else bootGate();
     if(e.target===el('#sAgentModal')||e.target.id==='agClose') el('#sAgentModal').classList.remove('on');
   });
 
+  /* 调试/截图：?dlg=n 直接弹一条角色语音小框 */
+  var _q2=new URLSearchParams(location.search);
+  if(_q2.has('dlg')){
+    setTimeout(function(){
+      var _s=document.getElementById('sim'); if(_s){_s.classList.add('on');document.body.classList.add('sim-on')}
+      showDlg(GOLD[(parseInt(_q2.get('dlg'),10)||0)%GOLD.length]);
+    },1200);
+  }
+
   /* 调试/截图：?agent=1 直接弹一张演示卡 */
   if(new URLSearchParams(location.search).has('agent')){
     setTimeout(function(){
@@ -3846,5 +4197,7 @@ else bootGate();
 })();
 </script>
 
+<div id="bigTip" aria-hidden="true" style="display:none"><b>自动播放中 · 请勿点击</b><span>点击鼠标会跳过当前画面与历史卡片</span><i></i></div>
+<script>window.addEventListener("error",function(e){try{document.body.setAttribute("data-err",(e.message||"")+" @"+(e.filename||"").split("/").pop()+":"+e.lineno)}catch(x){}});</script>
 </body>
 </html>
