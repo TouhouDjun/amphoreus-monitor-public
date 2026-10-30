@@ -9,6 +9,18 @@
 
 - 作者：天道之D菌（B 站同名）
 
+
+## 下载成品（含素材的 Windows 版）
+
+不想自己打包的话，直接下 Release 里的 `Amphoreus_v1.0.0.zip`（约 115 MB）：
+解压得到 `翁法罗斯.exe` + `点击前请读我.txt`，双击即用，免安装。
+
+- Release：https://github.com/TouhouDjun/amphoreus-monitor-public/releases/tag/v1.0.0
+- 直链：https://github.com/TouhouDjun/amphoreus-monitor-public/releases/download/v1.0.0/Amphoreus_v1.0.0.zip
+
+> 说明：**本仓库源码不含官方素材**；上面这个成品包为了能完整看到效果，内含角色立绘与 BGM，
+> 仅作非营利同人传播使用，版权归米哈游 · HOYO-MiX；若权利人要求会立即移除。
+
 ## 直接运行
 
 用 Chrome / Edge 打开 `index.html` 即可 —— 单文件、零依赖、`file://` 直接可跑。
